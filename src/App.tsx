@@ -5,19 +5,23 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { 
   ChevronRight, 
   ChevronLeft, 
-  ArrowRight, 
-  RefreshCw,
   Send,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
-import { BriefingData, Step } from './types';
+import { BriefingData } from './types';
 import { QUESTIONS } from './constants';
+import { supabase } from './lib/supabase';
 
 const INITIAL_DATA: BriefingData = {
   companyName: '',
+  contactName: '',
+  email: '',
+  phone: '',
   businessDescription: '',
   mainProductService: '',
   idealCustomer: '',
@@ -27,6 +31,8 @@ const INITIAL_DATA: BriefingData = {
   repetitiveTasks: '',
   automationWishes: '',
   visitorAction: '',
+  visualAssets: '',
+  referenceLinks: '',
 };
 
 const STORAGE_KEY = 'briefing_form_data';
@@ -38,6 +44,8 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_DATA;
   });
   const [direction, setDirection] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
@@ -61,11 +69,43 @@ export default function App() {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('Final Data:', formData);
-    setDirection(1);
-    setCurrentStepIndex(QUESTIONS.length + 1);
-    localStorage.removeItem(STORAGE_KEY);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    
+    try {
+      const { error } = await supabase.from('briefings').insert([
+        {
+          company_name: formData.companyName,
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          business_description: formData.businessDescription,
+          main_product_or_service: formData.mainProductService,
+          ideal_client: formData.idealCustomer,
+          website_goal: formData.websiteGoal,
+          business_pains: formData.businessPains,
+          time_consuming_tasks: formData.timeConsumingTasks,
+          repetitive_manual_tasks: formData.repetitiveTasks,
+          automation_goal: formData.automationWishes,
+          desired_site_action: formData.visitorAction,
+          visual_assets: formData.visualAssets,
+          reference_links: formData.referenceLinks,
+          raw_payload: formData
+        }
+      ]);
+
+      if (error) throw error;
+
+      setDirection(1);
+      setCurrentStepIndex(QUESTIONS.length + 1);
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (err: any) {
+      console.error('Error submitting form:', err);
+      setSubmitError('Ocorreu um erro ao enviar suas respostas. Por favor, tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const progress = Math.max(0, (currentStepIndex / QUESTIONS.length) * 100);
@@ -93,7 +133,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden bg-black relative">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start md:justify-center pt-24 md:pt-12 pb-6 px-4 md:px-12 overflow-hidden bg-black relative">
       {/* Atmospheric Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.03] blur-[120px] rounded-full animate-float" />
@@ -103,10 +143,10 @@ export default function App() {
       {/* Liquid Background Grain/Noise */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       
-      <div className="w-full max-w-md md:max-w-2xl relative h-[400px] md:h-[560px] z-10">
+      <div className="w-full max-w-md md:max-w-2xl relative h-[460px] md:h-[560px] z-10 mt-4 md:mt-0">
         {/* Minimal Progress Line */}
         {currentStepIndex >= 0 && currentStepIndex < QUESTIONS.length && (
-          <div className="absolute -top-16 left-0 w-full h-[1px] bg-white/[0.05]">
+          <div className="absolute -top-12 md:-top-16 left-0 w-full h-[1px] bg-white/[0.05]">
             <motion.div 
               className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"
               initial={{ width: 0 }}
@@ -164,7 +204,7 @@ export default function App() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="liquid-glass p-6 md:p-16 space-y-6 md:space-y-10 h-full flex flex-col"
+              className="liquid-glass p-5 md:p-16 space-y-5 md:space-y-10 h-full flex flex-col"
             >
               <div className="flex items-center justify-between shrink-0">
                 <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-600">
@@ -265,18 +305,32 @@ export default function App() {
               <div className="flex gap-2 md:gap-4 pt-4 md:pt-8 shrink-0">
                 <button
                   onClick={handleBack}
-                  className="p-4 md:p-6 rounded-full bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] transition-all group"
+                  disabled={isSubmitting}
+                  className="p-4 md:p-6 rounded-full bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-3.5 h-3.5 md:w-5 md:h-5 text-neutral-500 group-hover:text-white transition-colors" />
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="flex-1 bg-white text-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold rounded-full flex items-center justify-center gap-3 transition-all hover:bg-neutral-200"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-white text-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold rounded-full flex items-center justify-center gap-3 transition-all hover:bg-neutral-200 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Finalizar
-                  <Send className="w-3 h-3 md:w-4 md:h-4" />
+                  {isSubmitting ? (
+                    <>
+                      Enviando...
+                      <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      Finalizar
+                      <Send className="w-3 h-3 md:w-4 md:h-4" />
+                    </>
+                  )}
                 </button>
               </div>
+              {submitError && (
+                <p className="text-red-400 text-xs text-center mt-2">{submitError}</p>
+              )}
             </motion.div>
           )}
 
@@ -312,6 +366,14 @@ export default function App() {
           </p>
         </div>
       </div>
+
+      {/* Temporary discreet login button */}
+      <Link 
+        to="/admin/login" 
+        className="absolute bottom-4 right-4 text-[10px] text-white/10 hover:text-white/30 transition-colors uppercase tracking-widest"
+      >
+        Admin
+      </Link>
     </div>
   );
 }

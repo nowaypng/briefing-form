@@ -1,5 +1,8 @@
 export interface BriefingData {
   companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
   businessDescription: string;
   mainProductService: string;
   idealCustomer: string;
@@ -9,11 +12,13 @@ export interface BriefingData {
   repetitiveTasks: string;
   automationWishes: string;
   visitorAction: string;
+  visualAssets: string;
+  referenceLinks: string;
 }
 
 export type Step = 
   | 'welcome'
-  | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q8' | 'q9' | 'q10'
+  | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q8' | 'q9' | 'q10' | 'q11' | 'q12' | 'q13' | 'q14' | 'q15'
   | 'review'
   | 'success';
 

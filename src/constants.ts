@@ -9,6 +9,27 @@ export const QUESTIONS: Question[] = [
     helperText: 'O nome oficial ou como sua marca é conhecida.'
   },
   {
+    id: 'contactName',
+    label: 'Qual o seu nome?',
+    placeholder: 'Ex: João Silva',
+    type: 'text',
+    helperText: 'Como devemos chamar você?'
+  },
+  {
+    id: 'email',
+    label: 'Qual o seu melhor e-mail?',
+    placeholder: 'Ex: joao@empresa.com',
+    type: 'text',
+    helperText: 'Para enviarmos a proposta e próximos passos.'
+  },
+  {
+    id: 'phone',
+    label: 'Qual o seu WhatsApp?',
+    placeholder: 'Ex: (11) 99999-9999',
+    type: 'text',
+    helperText: 'Para um contato mais rápido e direto.'
+  },
+  {
     id: 'businessDescription',
     label: 'O que sua empresa faz?',
     placeholder: 'Descreva brevemente seu negócio...',
@@ -66,5 +87,19 @@ export const QUESTIONS: Question[] = [
     placeholder: 'Ex: Clicar no botão do WhatsApp, preencher formulário...',
     type: 'textarea',
     helperText: 'A chamada para ação (CTA) principal.'
+  },
+  {
+    id: 'visualAssets',
+    label: 'Você já possui identidade visual ou logotipo?',
+    placeholder: 'Ex: Sim, temos um manual da marca / Não, precisamos criar...',
+    type: 'textarea',
+    helperText: 'Cores, fontes, logo, fotos profissionais.'
+  },
+  {
+    id: 'referenceLinks',
+    label: 'Quais sites você usa como referência?',
+    placeholder: 'Ex: apple.com, stripe.com...',
+    type: 'textarea',
+    helperText: 'Links de sites que você gosta visualmente ou funcionalmente.'
   }
 ];
